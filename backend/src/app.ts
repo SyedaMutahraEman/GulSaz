@@ -13,9 +13,20 @@ import dashboardRoutes from './routes/dashboard.routes';
 
 const app = express();
 
+const allowedOrigins = new Set(
+  [env.FRONTEND_URL, 'http://localhost:3000', 'http://127.0.0.1:3000'].filter(Boolean)
+);
+
 app.use(
   cors({
-    origin: env.FRONTEND_URL,
+    origin: (origin, callback) => {
+      // Allow non-browser clients (no Origin) and configured local frontends.
+      if (!origin || allowedOrigins.has(origin) || env.NODE_ENV === 'development') {
+        callback(null, origin || env.FRONTEND_URL);
+        return;
+      }
+      callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true,
   })
 );
