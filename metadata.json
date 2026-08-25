@@ -1,0 +1,10 @@
+{
+  "name": "Remix GUL SAZ - Point of Sale \u0026 Inventory Terminal",
+  "description": "Exclusive Point of Sale and inventory terminal for GUL SAZ apparel brand featuring category-first dashboard, responsive mobile-first UI, barcode scanner, and automatic receipt generation.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

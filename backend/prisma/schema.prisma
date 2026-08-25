@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum ProductStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum InventoryMovementType {
+  INITIAL_STOCK
+  STOCK_ADDED
+  STOCK_REMOVED
+  STOCK_ADJUSTMENT
+  SALE
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  ONLINE
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sales              Sale[]
+  inventoryMovements InventoryMovement[]
+
+  @@map("users")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id            String        @id @default(cuid())
+  name          String
+  categoryId    String
+  size          String
+  color         String
+  description   String?
+  image         String?
+  purchasePrice Decimal       @db.Decimal(12, 2)
+  sellingPrice  Decimal       @db.Decimal(12, 2)
+  stock         Int           @default(0)
+  barcode       String        @unique
+  status        ProductStatus @default(ACTIVE)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  category           Category            @relation(fields: [categoryId], references: [id])
+  inventoryMovements InventoryMovement[]
+  saleItems          SaleItem[]
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([name])
+  @@map("products")
+}
+
+model InventoryMovement {
+  id            String                @id @default(cuid())
+  productId     String
+  type          InventoryMovementType
+  quantity      Int
+  previousStock Int
+  newStock      Int
+  reason        String?
+  createdById   String
+  createdAt     DateTime              @default(now())
+
+  product   Product @relation(fields: [productId], references: [id])
+  createdBy User    @relation(fields: [createdById], references: [id])
+
+  @@index([productId])
+  @@index([createdAt])
+  @@map("inventory_movements")
+}
+
+model Sale {
+  id             String        @id @default(cuid())
+  invoiceNumber  String        @unique
+  employeeId     String
+  subtotal       Decimal       @db.Decimal(12, 2)
+  discount       Decimal       @default(0) @db.Decimal(12, 2)
+  discountPercent Decimal?     @db.Decimal(5, 2)
+  total          Decimal       @db.Decimal(12, 2)
+  paymentMethod  PaymentMethod
+  amountPaid     Decimal       @db.Decimal(12, 2)
+  change         Decimal       @default(0) @db.Decimal(12, 2)
+  notes          String?
+  createdAt      DateTime      @default(now())
+
+  employee User       @relation(fields: [employeeId], references: [id])
+  items    SaleItem[]
+
+  @@index([employeeId])
+  @@index([createdAt])
+  @@index([paymentMethod])
+  @@map("sales")
+}
+
+model SaleItem {
+  id          String  @id @default(cuid())
+  saleId      String
+  productId   String
+  productName String
+  barcode     String
+  size        String
+  color       String
+  quantity    Int
+  unitPrice   Decimal @db.Decimal(12, 2)
+  total       Decimal @db.Decimal(12, 2)
+
+  sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([saleId])
+  @@index([productId])
+  @@map("sale_items")
+}
+
+model StoreSettings {
+  id                   String   @id @default(cuid())
+  brandName            String
+  tagline              String
+  address              String
+  phone                String
+  email                String
+  currencySymbol       String
+  currencyCode         String
+  taxRatePercent       Decimal  @default(0) @db.Decimal(5, 2)
+  taxNumber            String?
+  receiptFooterMessage String
+  updatedAt            DateTime @updatedAt
+
+  @@map("store_settings")
+}
+
+model InvoiceSequence {
+  id        Int      @id @default(1)
+  lastValue Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@map("invoice_sequences")
+}
