@@ -83,7 +83,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const message =
         err instanceof ApiError
           ? err.message
-          : 'Unable to sign in. Please check your credentials and try again.';
+          : err instanceof TypeError
+            ? 'Cannot reach the API server. Make sure the backend is running on port 5000.'
+            : 'Unable to sign in. Please check your credentials and try again.';
       return { success: false, error: message };
     }
   };
@@ -107,7 +109,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const message =
         err instanceof ApiError
           ? err.message
-          : 'Unable to create account. Please try again.';
+          : err instanceof TypeError
+            ? 'Cannot reach the API server. Make sure the backend is running on port 5000.'
+            : 'Unable to create account. Please try again.';
       return { success: false, error: message };
     }
   };

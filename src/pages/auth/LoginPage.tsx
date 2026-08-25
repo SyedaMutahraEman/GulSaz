@@ -96,6 +96,14 @@ export const LoginPage: React.FC = () => {
       .slice(0, 2)
       .toUpperCase() || 'POS';
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F3F4F6] text-xs text-gray-500">
+        Loading session...
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F3F4F6] text-[#111827] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
